@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Central de Operações - Monitoramento</title>
+  
+  <!-- FontAwesome para ícones -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <style>
+    /* Reset básico */
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #121722;
+      color: #E0E6F1;
+      font-family: 'Roboto', 'Segoe UI', Tahoma, sans-serif;
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+    }
+
+    h1 {
+      text-align: center;
+      font-weight: 700;
+      font-size: 2.8rem;
+      margin-bottom: 40px;
+      letter-spacing: 1.5px;
+      text-shadow: 0 0 8px #17a2b8;
+    }
+
+    form {
+      background: #1e2736;
+      padding: 30px 35px;
+      border-radius: 12px;
+      max-width: 700px;
+      margin: 0 auto 50px;
+      box-shadow: 0 0 25px rgba(23, 162, 184, 0.5);
+      transition: box-shadow 0.3s ease;
+    }
+    form:hover {
+      box-shadow: 0 0 40px rgba(23, 162, 184, 0.8);
+    }
+
+    label {
+      display: block;
+      margin-top: 18px;
+      font-weight: 600;
+      font-size: 1.1rem;
+      color: #b0c4de;
+      user-select: none;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 10px;
+      border: none;
+      background: #2a3649;
+      color: #E0E6F1;
+      font-size: 1.05rem;
+      margin-top: 8px;
+      transition: background 0.3s ease;
+    }
+    input::placeholder {
+      color: #7a8aa4;
+      font-style: italic;
+    }
+    input:focus, select:focus {
+      outline: none;
+      background: #374960;
+      box-shadow: 0 0 8px #17a2b8;
+    }
+
+    button[type="submit"] {
+      background: #17a2b8;
+      border: none;
+      padding: 16px 28px;
+      border-radius: 10px;
+      color: white;
+      font-weight: 700;
+      font-size: 1.3rem;
+      cursor: pointer;
+      margin-top: 30px;
+      width: 100%;
+      box-shadow: 0 4px 14px rgba(23, 162, 184, 0.7);
+      transition: background 0.3s ease;
+    }
+    button[type="submit"]:hover {
+      background: #138496;
+      box-shadow: 0 6px 20px rgba(19, 132, 150, 0.9);
+    }
+
+    #protocolos {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    #protocolos h2 {
+      text-align: center;
+      font-weight: 700;
+      font-size: 2rem;
+      margin-bottom: 20px;
+      color: #17a2b8;
+      text-shadow: 0 0 8px #17a2b8;
+    }
+
+    #search {
+      width: 100%;
+      padding: 14px 20px;
+      margin-bottom: 20px;
+      border-radius: 25px;
+      border: none;
+      background: #2a3649;
+      color: #e0e6f1;
+      font-size: 1.1rem;
+      box-shadow: 0 0 12px rgba(23, 162, 184, 0.5);
+      transition: background 0.3s ease;
+    }
+    #search::placeholder {
+      color: #7a8aa4;
+      font-style: italic;
+    }
+    #search:focus {
+      outline: none;
+      background: #374960;
+      box-shadow: 0 0 14px #17a2b8;
+    }
+
+    #protocolos button {
+      background: #17a2b8;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 25px;
+      color: white;
+      font-weight: 700;
+      font-size: 1.1rem;
+      cursor: pointer;
+      margin-right: 15px;
+      box-shadow: 0 3px 10px rgba(23, 162, 184, 0.6);
+      transition: background 0.3s ease;
+    }
+    #protocolos button:hover {
+      background: #138496;
+      box-shadow: 0 5px 15px rgba(19, 132, 150, 0.8);
+    }
+
+    .protocolo {
+      background: #1e2736;
+      border-left: 8px solid #28a745;
+      padding: 22px 28px;
+      margin-bottom: 18px;
+      border-radius: 16px;
+      box-shadow: 0 0 14px rgba(40, 167, 69, 0.5);
+      position: relative;
+      font-size: 1.1rem;
+      line-height: 1.6;
+      white-space: pre-line;
+      transition: box-shadow 0.3s ease, border-color 0.3s ease;
+    }
+
+    /* Status color classes */
+    .protocolo.com-alteracao {
+      border-left-color: #ffc107; /* amarelo */
+      box-shadow: 0 0 18px rgba(255, 193, 7, 0.6);
+    }
+
+    .protocolo.sem-alteracao {
+      border-left-color: #28a745; /* verde */
+      box-shadow: 0 0 14px rgba(40, 167, 69, 0.5);
+    }
+
+    /* Botões dentro do protocolo */
+    .protocolo button {
+      position: absolute;
+      top: 18px;
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 1rem;
+      cursor: pointer;
+      color: white;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 3px 12px rgba(0,0,0,0.2);
+      transition: background 0.3s ease;
+    }
+
+    .protocolo button.excluir {
+      right: 15px;
+      background-color: #dc3545;
+    }
+    .protocolo button.excluir:hover {
+      background-color: #b02a37;
+    }
+
+    .protocolo button.whatsapp {
+      right: 95px;
+      background-color: #25D366;
+    }
+    .protocolo button.whatsapp:hover {
+      background-color: #1ebe57;
+    }
+
+    /* Ícones no botão */
+    .protocolo button i {
+      font-size: 1.2rem;
+    }
+
+    /* Destaque na busca */
+    .highlight {
+      background-color: #444f6b;
+      transition: background-color 0.3s ease;
+    }
+
+    /* Responsivo */
+    @media(max-width: 720px) {
+      form, #protocolos {
+        padding: 15px;
+        max-width: 100%;
+      }
+      .protocolo button.whatsapp {
+        right: 70px;
+        padding: 8px 12px;
+      }
+      .protocolo button.excluir {
+        right: 10px;
+        padding: 8px 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Central de Operações - Monitoramento</h1>
+  <form id="form">
+    <label for="lojaBusca">Local Monitorado:</label>
+    <input type="text" id="lojaBusca" list="lojas" placeholder="Digite para buscar..." required autocomplete="off" />
+    <datalist id="lojas">
+option value="	ALE	ALTO ALEGRE DO MARANHAO	"></option>
+<option value="	AMI	ALTAMIRA DO MARANHÃO	"></option>
+<option value="	ANJ	ANAJATUBA	"></option>
+<option value="	BAC	BACABAL	"></option>
+<option value="	BBV	BACABAL BELA VISTA	"></option>
+<option value="	BDA	BREJO DE AREIA	"></option>
+<option value="	BLU	BOM LUGAR	"></option>
+<option value="	CAT	CANTANHEDE	"></option>
+<option value="	LCU	CONCEIÇÃO DO LAGO AÇU	"></option>
+<option value="	LGD	LAGOA GRANDE DO MARANHÃO	"></option>
+<option value="	LVE	LAGO VERDE	"></option>
+<option value="	MIR	MIRANDA DO NORTE	"></option>
+<option value="	MTN	MATÕES DO NORTE	"></option>
+<option value="	ODC	OLHO D'AGUA DAS CUNHÃS	"></option>
+<option value="	PIO	PIO XII	"></option>
+<option value="	PIP	PIRAPEMAS	"></option>
+<option value="	PRM	PAULO RAMOS	"></option>
+<option value="	SAM	SÃO MATEUS DO MARANHÃO	"></option>
+<option value="	SLG	SÃO LUÍS GONZAGA DO MARANHÃO	"></option>
+<option value="	STB	SATUBINHA	"></option>
+<option value="	VIF	VITORINO FREIRE	"></option>
+<option value="	CDP	CAXIAS DEP FECHADO	"></option>
+<option value="	ALA	ALDEIAS ALTAS	"></option>
+<option value="	BRJ	BREJINHO	"></option>
+<option value="	CAX	CAXIAS	"></option>
+<option value="	CVR	CAXIAS VOLTA REDONDA	"></option>
+<option value="	CXE	CAXIAS ELETRO	"></option>
+<option value="	MTS	MATÕES	"></option>
+<option value="	PRN	PARNARAMA	"></option>
+<option value="	SJE	SÃO JOÃO DO SOTER	"></option>
+<option value="	AMP	AMAPÁ DO MARANHÃO	"></option>
+<option value="	CME	CÂNDIDO MENDES	"></option>
+<option value="	CTP	CARUTAPERA	"></option>
+<option value="	GDV	GODOFREDO VIANA	"></option>
+<option value="	LDO	LUÍS DOMINGUES	"></option>
+<option value="	ALC	ALCÂNTARA	"></option>
+<option value="	APA	APICUM-AÇU	"></option>
+<option value="	BCB	BACURITUBA	"></option>
+<option value="	BCR	BACURI	"></option>
+<option value="	BEQ	BEQUIMÃO	"></option>
+<option value="	CED	CEDRAL	"></option>
+<option value="	CEN	CENTRAL DO MARANHÃO	"></option>
+<option value="	CJA	CAJAPIÓ	"></option>
+<option value="	CUM	CURURUPÚ	"></option>
+<option value="	GUI	GUIMARÃES	"></option>
+<option value="	MIZ	MIRINZAL	"></option>
+<option value="	PAS	PARAISO	"></option>
+<option value="	PEM	PERI MIRM	"></option>
+<option value="	PIN	PINHEIRO	"></option>
+<option value="	PME	PALMEIRANDIA	"></option>
+<option value="	PNU	PINHEIRO NOVOS E USADOS	"></option>
+<option value="	POM	PORTO RICO DO MARANHÃO	"></option>
+<option value="	DPI	DEPOSITO DE PINHEIRO	"></option>
+<option value="	PSA	PRESIDENTE SARNEY	"></option>
+<option value="	SBE	SÃO BENTO	"></option>
+<option value="	SER	SERRANO DO MARANHÃO	"></option>
+<option value="	SHE	SANTA HELENA	"></option>
+<option value="	SJB	SÃO JOÃO BATISTA	"></option>
+<option value="	SVF	SÃO VICENTE DE FERRER	"></option>
+<option value="	TRF	TRES FUROS	"></option>
+<option value="	TUR	TURIAÇÚ	"></option>
+<option value="	AAP	ALTO ALEGRE DO PINDARÉ	"></option>
+<option value="	ACO	ACOQUE	"></option>
+<option value="	ARI	ARARI	"></option>
+<option value="	AUZ	AUZILANDIA	"></option>
+<option value="	BCU	BURITICUPU	"></option>
+<option value="	BJA	BOM JARDIM	"></option>
+<option value="	BVI	BELA VISTA DO MARANHÃO	"></option>
+<option value="	CAJ	CAJARI	"></option>
+<option value="	DSI	DEPOSITO DE SANTA INES	"></option>
+<option value="	IPM	IGARAPÉ DO MEIO	"></option>
+<option value="	JRE	JACARÉ	"></option>
+<option value="	MAT	MATINHA	"></option>
+<option value="	MON	MONÇÃO	"></option>
+<option value="	OLN	OLINDA NOVA DO MARANHÃO	"></option>
+<option value="	PEN	PENALVA	"></option>
+<option value="	PMI	PINDARE-MIRIM	"></option>
+<option value="	SIN	SANTA INÊS	"></option>
+<option value="	SJC	SÃO JOAO DO CARU	"></option>
+<option value="	SLZ	SANTA LUZIA DO TIDE	"></option>
+<option value="	TUF	TUFILANDIA	"></option>
+<option value="	VIA	VIANA	"></option>
+
+
+    </datalist>
+
+    <label for="ocorrencia">Tipo de Ocorrência:</label>
+    <select id="ocorrencia" required>
+      <option value="" disabled selected>Selecione a ocorrência</option>
+      <option value="">-- Selecione --</option>
+ <option value="Alarme Disparado ">Alarme Disparado</option>
+  <option value="intrusao">Intrusão / Invasão</option>
+  <option value="falha_comunicacao">Perda de Sinal / Falha de Comunicação</option>
+  <option value="fora_horario">Abertura/Fechamento fora de horário</option>
+    </select>
+
+    <label for="status">Status:</label>
+    <select id="status" required>
+      <option value="" disabled selected>Selecione o status</option>
+      <option>Com alteração</option>
+      <option>Sem alteração</option>
+    </select>
+
+    <label for="obs">Observações (opcional):</label>
+    <input type="text" id="obs" placeholder="Alguma informação extra..." autocomplete="off" />
+
+    <button type="submit">Gerar Protocolo</button>
+  </form>
+
+  <div id="protocolos">
+    <h2>Protocolos Registrados</h2>
+    <input type="text" id="search" placeholder="Buscar protocolo..." autocomplete="off" />
+    <div style="margin-bottom: 15px;">
+      <button onclick="exportarCSV()" title="Exportar todos protocolos em CSV"><i class="fas fa-file-csv"></i> Exportar CSV</button>
+      <button onclick="limparProtocolos()" title="Apagar todos os protocolos"><i class="fas fa-trash-alt"></i> Limpar Todos</button>
+    </div>
+    <div id="lista"></div>
+  </div>
+
+  <script>
+    const form = document.getElementById('form');
+    const lista = document.getElementById('lista');
+    const search = document.getElementById('search');
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+
+      const loja = document.getElementById('lojaBusca').value.trim();
+      const ocorrencia = document.getElementById('ocorrencia').value;
+      const status = document.getElementById('status').value;
+      const obs = document.getElementById('obs').value.trim();
+      const dataHora = new Date().toLocaleString();
+      const protocolo = gerarProtocolo();
+
+      const registro = {
+        remetente: "Central de Operações",
+        dataHora,
+        local: loja,
+        tipoOcorrencia: ocorrencia,
+        status,
+        protocolo,
+        obs
+      };
+
+      salvarProtocolo(registro);
+      atualizarDatalist(loja);
+      exibirProtocolos();
+      form.reset();
+    });
+
+    function gerarProtocolo() {
+      return Math.floor(100000 + Math.random() * 900000).toString();
+    }
+
+    function salvarProtocolo(registro) {
+      const protocolos = JSON.parse(localStorage.getItem('protocolos') || '[]');
+      protocolos.push(registro);
+      localStorage.setItem('protocolos', JSON.stringify(protocolos));
+    }
+
+    function exibirProtocolos() {
+      const protocolos = JSON.parse(localStorage.getItem('protocolos') || '[]');
+      protocolos.sort((a, b) => new Date(b.dataHora) - new Date(a.dataHora));
+      lista.innerHTML = '';
+
+      protocolos.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'protocolo ' + (item.status === 'Com alteração' ? 'com-alteracao' : 'sem-alteracao');
+        div.innerText =
+          `Remetente: ${item.remetente}\n` +
+          `Data/Hora: ${item.dataHora}\n` +
+          `Local Monitorado: ${item.local}\n` +
+          `Tipo de Ocorrência: ${item.tipoOcorrencia}\n` +
+          `Status: ${item.status}\n` +
+          `Número de Protocolo: ${item.protocolo}\n` +
+          `Observações: ${item.obs || 'N/A'}`;
+
+        // Botão WhatsApp
+        const btnWhats = document.createElement('button');
+        btnWhats.className = 'whatsapp';
+        btnWhats.title = 'Enviar via WhatsApp';
+        btnWhats.innerHTML = '<i class="fab fa-whatsapp"></i>';
+        btnWhats.onclick = () => {
+          const mensagem =
+            `*Protocolo Central de Operações*\n` +
+            `Remetente: ${item.remetente}\n` +
+            `Data/Hora: ${item.dataHora}\n` +
+            `Local Monitorado: ${item.local}\n` +
+            `Tipo de Ocorrência: ${item.tipoOcorrencia}\n` +
+            `Status: ${item.status}\n` +
+            `Número de Protocolo: ${item.protocolo}\n` +
+            `Observações: ${item.obs || 'N/A'}`;
+          const textoURL = encodeURIComponent(mensagem);
+
+          // Abre app WhatsApp no celular
+          const url = `whatsapp://send?text=${textoURL}`;
+          window.location.href = url;
+        };
+        div.appendChild(btnWhats);
+
+        // Botão Excluir
+        const btnExcluir = document.createElement('button');
+        btnExcluir.className = 'excluir';
+        btnExcluir.title = 'Excluir protocolo';
+        btnExcluir.innerHTML = '<i class="fas fa-trash-alt"></i>';
+        btnExcluir.onclick = () => {
+          deletarProtocolo(item.protocolo);
+        };
+        div.appendChild(btnExcluir);
+
+        lista.appendChild(div);
+      });
+    }
+
+    function deletarProtocolo(numero) {
+      let protocolos = JSON.parse(localStorage.getItem('protocolos') || '[]');
+      protocolos = protocolos.filter(p => p.protocolo !== numero);
+      localStorage.setItem('protocolos', JSON.stringify(protocolos));
+      exibirProtocolos();
+    }
+
+    function limparProtocolos() {
+      if (confirm('Deseja realmente apagar todos os protocolos?')) {
+        localStorage.removeItem('protocolos');
+        exibirProtocolos();
+      }
+    }
+
+    function exportarCSV() {
+      const protocolos = JSON.parse(localStorage.getItem('protocolos') || '[]');
+      if (protocolos.length === 0) {
+        alert('Nenhum protocolo para exportar.');
+        return;
+      }
+      const cabecalho = ['Remetente','Data/Hora','Local Monitorado','Tipo de Ocorrência','Status','Número de Protocolo','Observações'];
+      const linhas = protocolos.map(p => [
+        p.remetente,
+        `"${p.dataHora}"`,
+        p.local,
+        p.tipoOcorrencia,
+        p.status,
+        p.protocolo,
+        `"${p.obs || ''}"`
+      ].join(';'));
+      const csvContent = [cabecalho.join(';'), ...linhas].join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', 'protocolos.csv');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function atualizarDatalist(loja) {
+      const datalist = document.getElementById('lojas');
+      const options = Array.from(datalist.options).map(opt => opt.value);
+      if (!options.includes(loja)) {
+        const option = document.createElement('option');
+        option.value = loja;
+        datalist.appendChild(option);
+      }
+    }
+
+    search.addEventListener('input', () => {
+      const termo = search.value.trim().toLowerCase();
+      const protocolos = document.querySelectorAll('.protocolo');
+      protocolos.forEach(div => {
+        const contem = div.innerText.toLowerCase().includes(termo);
+        div.style.display = contem ? 'block' : 'none';
+        div.classList.toggle('highlight', contem);
+      });
+    });
+
+    // Inicializa lista na carga
+    exibirProtocolos();
+  </script>
+</body>
+</html>
